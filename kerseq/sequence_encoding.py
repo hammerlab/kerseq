@@ -1,8 +1,15 @@
 import numpy as np
 
+def _build_index_dict(sequences):
+    unique_symbols = set()
+    for seq in sequences:
+        for c in seq:
+            unique_symbols.add(c)
+    return {c: i for (i, c) in enumerate(unique_symbols)}
+
 def sequences_to_indices(
         sequences,
-        index_dict,
+        index_dict=None,
         add_start_symbol=True,
         add_end_symbol=True):
     """
@@ -20,6 +27,9 @@ def sequences_to_indices(
 
     add_end_symbol : bool
     """
+    if index_dict is None:
+        index_dict = _build_index_dict(sequences)
+
     index_sequences = []
     for seq in sequences:
         index_sequences.append([index_dict[c] + 1 for c in seq])
@@ -36,7 +46,7 @@ def sequences_to_indices(
 
 def padded_indices(
         sequences,
-        index_dict,
+        index_dict=None,
         ndim=2,
         add_start_symbol=True,
         add_end_symbol=True):
@@ -61,7 +71,7 @@ def padded_indices(
         result[i, :len(x)] = x
     return result
 
-def onehot(sequences, index_dict):
+def onehot(sequences, index_dict=None):
     """
     Parameters
     ----------
@@ -71,6 +81,8 @@ def onehot(sequences, index_dict):
         Mapping from symbols to integer indices
     """
     n_seq = len(sequences)
+    if index_dict is None:
+        index_dict = _build_index_dict(sequences)
     n_symbols = len(index_dict)
     maxlen = max(len(seq) for seq in sequences)
     result = np.zeros((n_seq, maxlen, n_symbols), dtype=bool)

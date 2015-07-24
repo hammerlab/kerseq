@@ -1,10 +1,9 @@
-
 from keras.models import Graph
 from keras.layers.recurrent import LSTM
 from keras.layers.embeddings import Embedding
 from keras.layers.core import Dense
 
-from reverse_time import ReverseTime
+from .reverse_time import ReverseTime
 
 def _expand_arg_to_dict(
         arg_name, arg_value, expected_type, sequence_input_names):
@@ -25,7 +24,7 @@ def _expand_arg_to_dict(
             "Expected %s to be dict from names to %s, not %s : %s" % (
                 arg_name, expected_type, arg_value, type(arg_value)))
 
-def build_recurrent_network(
+def build_rnn_graph(
         sequence_input_names,
         n_symbols,
         rnn_class=LSTM,
