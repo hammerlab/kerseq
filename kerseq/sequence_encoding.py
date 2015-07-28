@@ -90,3 +90,29 @@ def onehot(sequences, index_dict=None):
         for j, sj in enumerate(seq):
             result[i, j, index_dict[sj]] = 1
     return result
+    
+def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None):
+    """
+    Parameters
+    ----------
+    sequences : list of strings
+    alpha: float, forgetting factor
+    bidirectional: boolean, whether to do both a forward pass 
+                   and a backward pass over the string
+    index_dict : dict, mapping from symbols to integer indices
+    """
+    n_seq = len(sequences)
+    if index_dict is None:
+        index_dict = _build_index_dict(sequences)
+    n_symbols = len(index_dict)
+    if bidirectional:
+        result = np.zeros((n_seq, 2*n_symbols), dtype=float)
+    else:
+        result = np.zeros((n_seq, n_symbols), dtype=float)
+    for i, seq in enumerate(sequences):
+        l = len(seq)
+        for j, sj in enumerate(seq):
+            result[i, index_dict[sj]] += alpha ** (l-j-1)
+            if bidirectional:
+                result[i, n_symbols + index_dict[sj]] += alpha ** j
+    return result
