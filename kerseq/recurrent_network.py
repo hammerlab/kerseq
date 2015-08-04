@@ -38,6 +38,7 @@ def build_rnn_graph(
         rnn_bidirectional=True,
         dense_output_dims=[400],
         dense_activation="relu",
+        output_dim = 1,
         output_activation="sigmoid",
         optimizer="rmsprop",
         loss="mse"):
@@ -155,7 +156,7 @@ def build_rnn_graph(
         #    model.add(Dropout(dropout_probability), input_name)
 
     model.add_node(
-        Dense(dense_output_dim, 1, activation=output_activation),
+        Dense(dense_output_dim, output_dim, activation=output_activation),
         name="final_dense",
         input="dense%d" % len(dense_output_dims))
     model.add_output(name='output', input="final_dense")
