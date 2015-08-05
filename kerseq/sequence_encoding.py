@@ -48,6 +48,7 @@ def padded_indices(
         sequences,
         index_dict=None,
         ndim=2,
+        padding='pre',
         add_start_symbol=True,
         add_end_symbol=True):
     """
@@ -68,7 +69,10 @@ def padded_indices(
     shape = (n_samples, max_len) + (1,) * (ndim - 2)
     result = np.zeros(shape, dtype=int)
     for i, x in enumerate(index_sequences):
-        result[i, :len(x)] = x
+        if padding == 'post':
+            result[i, :len(x)] = x
+        elif padding == 'pre':
+            result[i, -len(x):] = x
     return result
 
 def onehot(sequences, index_dict=None):
@@ -117,7 +121,7 @@ def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None):
                 result[i, n_symbols + index_dict[sj]] += alpha ** j
     return result
     
-def padded_indices_to_next_symbol_as_output(X):
+def padded_indices_to_next_symbol_as_output(X,padding='pre'):
     """
     Parameters
     ----------
@@ -138,7 +142,10 @@ def padded_indices_to_next_symbol_as_output(X):
     counter = 0
     for i,row in enumerate(X):
         for j in range(1,samples_in_row[i]+1):
-            X_out[counter,:j] = row[:j]
+            if padding == 'pre':
+                X_out[counter,-j:] = row[-j:]
+            elif padding == 'post':
+                X_out[counter,:j] = row[:j]
             y_out[counter] = row[j]
             counter += 1
     
