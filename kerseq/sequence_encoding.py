@@ -141,12 +141,14 @@ def padded_indices_to_next_symbol_as_output(X,padding='pre'):
     y_out = np.zeros(total_output_samples)
     counter = 0
     for i,row in enumerate(X):
-        for j in range(1,samples_in_row[i]+1):
-            if padding == 'pre':
-                X_out[counter,-j:] = row[-j:]
-            elif padding == 'post':
+        samp_row_adj = samples_in_row[i] + 1
+        for j in range(1,samp_row_adj):
+            if padding == 'post':
                 X_out[counter,:j] = row[:j]
-            y_out[counter] = row[j]
+                y_out[counter] = row[j]
+            elif padding == 'pre':
+                X_out[counter,-j:] = row[-samp_row_adj:-samp_row_adj+j]
+                y_out[counter] = row[-samp_row_adj+j]
             counter += 1
     
     return X_out,y_out
