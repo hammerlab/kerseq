@@ -136,14 +136,27 @@ def build_rnn_graph(
     # transform them into a lower dimensional space
     for i, dense_output_dim in enumerate(dense_output_dims):
         if i == 0:
-            model.add_node(
-                Dense(
-                    sum(d for d in rnn_dims),
-                    dense_output_dim,
-                    activation=dense_activation),
-                name="dense1",
-                merge_mode="concat",
-                inputs=rnn_names)
+            # if we have a list with more than one element, then we merge
+            if len(rnn_names) > 1:
+                model.add_node(
+                    Dense(
+                        sum(rnn_dims),
+                        dense_output_dim,
+                        activation=dense_activation),
+                    name="dense1",
+                    merge_mode="concat",
+                    inputs=rnn_names)
+            elif len(rnn_names) == 1:
+                # we have one element, so no merge required
+                model.add_node(
+                    Dense(
+                        rnn_dims[0],
+                        dense_output_dim,
+                        activation=dense_activation),
+                    name="dense1",
+                    input=rnn_names[0])
+            else:
+                raise ValueError("RNN layer required")
         else:
             model.add_node(
                 Dense(
