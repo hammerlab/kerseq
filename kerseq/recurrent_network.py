@@ -38,7 +38,7 @@ def build_rnn_graph(
         rnn_bidirectional=True,
         dense_output_dims=[400],
         dense_activation="relu",
-        output_dim = 1,
+        output_dim=1,
         output_activation="sigmoid",
         optimizer="rmsprop",
         loss="mse"):
@@ -137,22 +137,20 @@ def build_rnn_graph(
     for i, dense_output_dim in enumerate(dense_output_dims):
         if i == 0:
             # if we have a list with more than one element, then we merge
+            first_dense_layer = Dense(
+                sum(rnn_dims),
+                dense_output_dim,
+                activation=dense_activation)
             if len(rnn_names) > 1:
                 model.add_node(
-                    Dense(
-                        sum(rnn_dims),
-                        dense_output_dim,
-                        activation=dense_activation),
+                    first_dense_layer,
                     name="dense1",
                     merge_mode="concat",
                     inputs=rnn_names)
             elif len(rnn_names) == 1:
                 # we have one element, so no merge required
                 model.add_node(
-                    Dense(
-                        rnn_dims[0],
-                        dense_output_dim,
-                        activation=dense_activation),
+                    first_dense_layer,
                     name="dense1",
                     input=rnn_names[0])
             else:
