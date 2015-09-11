@@ -121,6 +121,26 @@ def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None):
                 result[i, n_symbols + index_dict[sj]] += alpha ** j
     return result
     
+def BOW(sequences, index_dict=None, max_count=None):
+    """
+    Parameters
+    ----------
+    sequences : list of strings
+    index_dict : dict, mapping from symbols to integer indices
+    max_count : largest count value allowed for bag-of-words
+    """
+    n_seq = len(sequences)
+    if index_dict is None:
+        index_dict = _build_index_dict(sequences)
+    if max_count == None:
+        max_count = np.infty
+    n_symbols = len(index_dict)
+    result = np.zeros((n_seq, n_symbols), dtype=float)
+    for i, seq in enumerate(sequences):
+        for j, sj in enumerate(seq):
+            result[i, index_dict[sj]] = np.minimum(result[i, index_dict[sj]]+1,max_count)
+    return result
+    
 def padded_indices_to_next_symbol_as_output(X,padding='pre'):
     """
     Parameters
