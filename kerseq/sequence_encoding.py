@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import dok_matrix
 
 def _build_index_dict(sequences):
     unique_symbols = set()
@@ -50,7 +51,8 @@ def padded_indices(
         ndim=2,
         padding='pre',
         add_start_symbol=True,
-        add_end_symbol=True):
+        add_end_symbol=True,
+        max_len=None):
     """
     Given a list of strings, construct a list of index sequences
     and then pad them to make an array.
@@ -60,8 +62,9 @@ def padded_indices(
         index_dict=index_dict,
         add_start_symbol=add_start_symbol,
         add_end_symbol=add_end_symbol)
-
-    max_len = max(len(s) for s in index_sequences)
+    
+    if max_len == None:
+        max_len = max(len(s) for s in index_sequences)
     n_samples = len(index_sequences)
     if ndim < 2:
         raise ValueError("Padded input must have at least 2 dims")
@@ -95,7 +98,7 @@ def onehot(sequences, index_dict=None):
             result[i, j, index_dict[sj]] = 1
     return result
     
-def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None):
+def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None, sparse=False):
     """
     Parameters
     ----------
@@ -110,18 +113,25 @@ def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None):
         index_dict = _build_index_dict(sequences)
     n_symbols = len(index_dict)
     if bidirectional:
-        result = np.zeros((n_seq, 2*n_symbols), dtype=float)
+        num_cols = 2*n_symbols
     else:
-        result = np.zeros((n_seq, n_symbols), dtype=float)
+        num_cols = n_symbols
+    if sparse:
+        result = dok_matrix((n_seq, num_cols), dtype=np.float)
+    else:
+        result = np.zeros((n_seq, num_cols), dtype=np.float)
     for i, seq in enumerate(sequences):
         l = len(seq)
         for j, sj in enumerate(seq):
             result[i, index_dict[sj]] += alpha ** (l-j-1)
             if bidirectional:
                 result[i, n_symbols + index_dict[sj]] += alpha ** j
-    return result
+    if sparse:
+        return result.tocsr()
+    else:
+        return result
     
-def BOW(sequences, index_dict=None, max_count=None):
+def BOW(sequences, index_dict=None, max_count=None, sparse=False):
     """
     Parameters
     ----------
@@ -135,11 +145,17 @@ def BOW(sequences, index_dict=None, max_count=None):
     if max_count == None:
         max_count = np.infty
     n_symbols = len(index_dict)
-    result = np.zeros((n_seq, n_symbols), dtype=float)
+    if sparse:
+        result = dok_matrix((n_seq, n_symbols), dtype=np.int16)
+    else:
+        result = np.zeros((n_seq, n_symbols), dtype=np.int16)
     for i, seq in enumerate(sequences):
         for j, sj in enumerate(seq):
             result[i, index_dict[sj]] = np.minimum(result[i, index_dict[sj]]+1,max_count)
-    return result
+    if sparse:
+        return result.tocsr()
+    else:
+        return result
     
 def padded_indices_to_next_symbol_as_output(X,padding='pre'):
     """
