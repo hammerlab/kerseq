@@ -131,7 +131,7 @@ def FOFE(sequences, alpha=0.7, bidirectional=False, index_dict=None, sparse=Fals
     else:
         return result
     
-def BOW(sequences, index_dict=None, max_count=None, sparse=False):
+def BOW(sequences, index_dict=None, max_count=None, sparse=False, df=None, normalize=False):
     """
     Parameters
     ----------
@@ -146,16 +146,25 @@ def BOW(sequences, index_dict=None, max_count=None, sparse=False):
         max_count = np.infty
     n_symbols = len(index_dict)
     if sparse:
-        result = dok_matrix((n_seq, n_symbols), dtype=np.int16)
+        counts = dok_matrix((n_seq, n_symbols), dtype=np.float)
     else:
-        result = np.zeros((n_seq, n_symbols), dtype=np.int16)
+        counts = np.zeros((n_seq, n_symbols), dtype=np.float)
     for i, seq in enumerate(sequences):
         for j, sj in enumerate(seq):
-            result[i, index_dict[sj]] = np.minimum(result[i, index_dict[sj]]+1,max_count)
+            counts[i, index_dict[sj]] = np.minimum(counts[i, index_dict[sj]]+1,max_count)
+    if df is not None:
+
+        #according to https://radimrehurek.com/gensim/models/tfidfmodel.html
+        counts *= np.log2(float(n_seq)/df)
+
+    #  normalize each row to sum to 1
+    if normalize:
+        counts /= counts.sum(1)[:, np.newaxis]
+
     if sparse:
-        return result.tocsr()
+        return counts.tocsr()
     else:
-        return result
+        return counts
     
 def padded_indices_to_next_symbol_as_output(X,padding='pre'):
     """
