@@ -52,7 +52,7 @@ if __name__ == '__main__':
         ],
         install_requires=[
             'numpy >=1.7, <2.0',
-            'pandas >=0.13.1, <0.17.0',
+            'pandas >=0.13.1',
             'keras',
             'nose >=1.3.6, <1.4'
         ],
